@@ -1,0 +1,41 @@
+{
+    "name": "backend",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "concurrently \"pm2 start app.js\" \"cd handlers && pm2 start mqttHandler.js\"",
+        "stop": "concurrently \"pm2 stop app.js\" \"cd handlers && pm2 stop mqttHandler.js\"",
+        "delete-all": "pm2 delete all",
+        "watch": "concurrently \"pm2 start app.js --watch\" \"cd handlers && pm2 start mqttHandler.js --watch\"",
+        "dev": "concurrently \"nodemon app.js\" \"cd handlers && nodemon mqttHandler.js\"",
+        "dev2": "nodemon app.js",
+        "logs": "pm2 logs",
+        "clear-logs": "pm2 flush"
+    },
+    "keywords": [],
+    "author": "Prakhar",
+    "license": "ISC",
+    "dependencies": {
+        "ajv": "^8.12.0",
+        "ajv-formats": "^2.1.1",
+        "bcrypt": "^5.1.0",
+        "body-parser": "^1.20.2",
+        "concurrently": "^7.6.0",
+        "cors": "^2.8.5",
+        "cron": "^2.3.0",
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "express-jwt": "^5.3.2",
+        "jsonwebtoken": "^9.0.0",
+        "moment": "^2.29.4",
+        "morgan": "^1.10.0",
+        "mqtt": "^4.3.7",
+        "nodemailer": "^6.9.1",
+        "nodemon": "^2.0.21",
+        "pg-promise": "^10.15.4",
+        "pm2": "^5.3.0",
+        "socket.io": "^4.6.1",
+        "xlsx": "^0.18.5"
+    }
+}
