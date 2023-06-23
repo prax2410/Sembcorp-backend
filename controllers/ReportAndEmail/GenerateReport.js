@@ -8,7 +8,7 @@ const xlsx = require("xlsx");
 //Get machine data and returns the required data.
 async function getData(machine, from, to, workbook, filepath) {
     try {
-        const ROW_LIMIT = 65536; // Maximum number of rows per Excel sheet
+        const ROW_LIMIT = 900000; // Maximum number of rows per Excel sheet
         const query = `SELECT *
                     FROM $1:name
                     WHERE created_on BETWEEN $2 AND $3
