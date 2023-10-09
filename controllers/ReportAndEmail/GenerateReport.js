@@ -8,24 +8,21 @@ const xlsx = require("xlsx");
 //Get machine data and returns the required data.
 async function getData(machine, from, to, workbook, filepath) {
     try {
-        const ROW_LIMIT = 900000; // Maximum number of rows per Excel sheet
+        const ROW_LIMIT = 65536; // Maximum number of rows per Excel sheet
         const query = `SELECT *
-                    FROM $1:name
-                    WHERE created_on BETWEEN $2 AND $3
-                    ORDER BY created_on`;
+            FROM $1:name
+            WHERE created_on BETWEEN $2 AND $3
+            ORDER BY created_on`;
         const queryValueArray = [machine, from, to];
         let rowCount = 0;
         let offset = 0;
         let sheetIndex = 1;
         let currentSheetData = [];
+        let reportData = []; // Initialize reportData as an empty array
 
         while (true) {
             const batchQuery = `${query} OFFSET ${offset} LIMIT ${ROW_LIMIT}`;
-            const reportData = await psqlToJson(batchQuery, queryValueArray);
-
-            if (reportData.length === 0) {
-                break; // No more data, exit the loop
-            }
+            reportData = await psqlToJson(batchQuery, queryValueArray);
 
             for (const datum of reportData) {
                 const sheetData = {
@@ -50,9 +47,14 @@ async function getData(machine, from, to, workbook, filepath) {
             }
 
             offset += ROW_LIMIT;
+
+            if (reportData.length < ROW_LIMIT) {
+                // No more data, exit the loop
+                break;
+            }
         }
 
-        if (currentSheetData.length > 0) {
+        if (currentSheetData.length > 0 || reportData.length === 0) {
             const sheetName = `Page${sheetIndex}`;
             await jsonToExcel(sheetName, currentSheetData, workbook, filepath);
         }
@@ -65,31 +67,30 @@ const filepath = [];
 
 async function getreport(from, to, machines) {
     try {
-        const workbook = xlsx.utils.book_new(); // Create new workbook
+        const workbookPromises = machines.map(async (machine) => {
+            const workbook = xlsx.utils.book_new();
+            const machineName = machine.toUpperCase(); // Assuming machine names are in uppercase
+            const filepath = path.join(
+                __dirname,
+                `/Reports/Reports-${machineName}-${new Date()
+                    .toISOString()
+                    .replace(/:/g, "-")
+                    .replace("T", "-")
+                    .replace("Z", "")}.xlsx`
+            );
 
-        filepath.push(
-            __dirname +
-            "/Reports/Reports-" +
-            new Date()
-                .toISOString()
-                .split(":")
-                .join("-")
-                .replace("T", "-")
-                .replace("Z", "") +
-            ".xlsx"
-        );
+            await getData(machine, from, to, workbook, filepath);
+            return { machineName, filepath }; // Return an object with machineName and filepath
+        });
 
-        const getDataPromises = machines.map((machine) =>
-            getData(machine, from, to, workbook, filepath[0])
-        );
-
-        await Promise.all(getDataPromises);
-
-        return filepath;
+        const machineFilepaths = await Promise.all(workbookPromises);
+        return machineFilepaths;
     } catch (error) {
         console.log(error.message);
     }
 }
+
+module.exports = { getreport };
 
 
 

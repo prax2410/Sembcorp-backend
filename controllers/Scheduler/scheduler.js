@@ -1,80 +1,29 @@
-const sendReport = require("./send-report");
+// const sendReport = require("./send-report");
+const { generateDailyReports } = require("../ReportAndEmail/GenerateDailyReport")
 const cron = require("cron");
 
-const daily = () => {
-    
-    const job1 = new cron.CronJob("00 7 * * *", () => {
-        const timezone = 'Asia/Kolkata';
-        const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));
-        yesterday.setHours(0, 1, 0);
-        const from = yesterday.toLocaleString('en-US', { timeZone: timezone });
-
-        yesterday.setHours(23, 59, 0);
-        const to = yesterday.toLocaleString('en-US', { timeZone: timezone });
-
-        // let from = new Date(new Date().setDate(new Date().getDate() - 1)).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        // let to = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        sendReport("Daily", from, to).then(
-            console.log("Daily Report sent successfully")
-        )
+const createDailyWorkbook = () => {
+    const job = new cron.CronJob("1 0 * * *", () => { // 00:01 AM daily
+        const machineList = ["giwel01", "giwel02", "giwel03", "giwel04", "giwel05"];
+        generateDailyReports(machineList);
     });
-
-    job1.start();
+    job.start();
 };
 
-const weekly = () => {
-    const job2 = new cron.CronJob("00 7 * * 6", () => {
-        let from = new Date(new Date().setDate(new Date().getDate() - 7)).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        let to = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        
-        sendReport("Weekly", from, to).then(
-            console.log("weekly Report sent successfully")
-        )
-    });
+const createTestWorkbook = () => {
+    const job1 = new cron.CronJob("12 19 * * *", () => {
+        // const machineList = ["giwel01", "giwel02", "giwel03", "giwel04", "giwel05"];
+        const machineList = ["giwel05"];
 
-    job2.start();
-};
-
-const monthly = () => {
-    const job3 = new cron.CronJob("01 0 1 * *", () => {
-        let date = new Date();
-        let from = new Date(date.getFullYear(), date.getMonth(), 2).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        let to = new Date(date.getFullYear(), date.getMonth() + 1, 1).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        
-        sendReport("Monthly", from, to).then(
-            console.log("Monthly Report sent successfully")
-        )
-    });
-
-    job3.start();
-};
-
-const check = () => {
-    
-    const job1 = new cron.CronJob("27 17 * * *", () => {
-        const timezone = 'Asia/Kolkata';
-        const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));
-        yesterday.setHours(0, 1, 0);
-        const from = yesterday.toLocaleString('en-US', { timeZone: timezone });
-
-        yesterday.setHours(23, 59, 0);
-        const to = yesterday.toLocaleString('en-US', { timeZone: timezone });
-        
-        // let from = new Date(new Date().setDate(new Date().getDate() - 1)).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        // let to = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        sendReport("Daily", from, to).then(
-            console.log("Daily Report sent successfully")
-        )
+        generateDailyReports(machineList);
     });
     job1.start();
 };
 
 const scheduler = () => {
     console.log("Scheduler Started");
-    daily();
-    weekly();
-    monthly();
-    // check();
+    createDailyWorkbook()
+    // createTestWorkbook()
 }
 
 module.exports = scheduler;

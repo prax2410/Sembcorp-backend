@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { filepath, getreport } = require("../ReportAndEmail/GenerateReport");
 const mail = require("../ReportAndEmail/email");
 const psqlToJson = require("../ReportAndEmail/psql-json");
@@ -15,60 +16,67 @@ function formatDate(dateString) {
 
 async function sendReport(timeLine, from, to) {
     try {
-        query = "SELECT first_name, email FROM users_table WHERE enable_emails='true'";
-        const emails = await psqlToJson(query);
-        
-        // const machines = await psqlToJson(
-        //     "SELECT wegid from machines_table ORDER BY wegid"
-        // );
-        // const wegidList = machines.map(({ wegid }) => wegid);
-        const wegidList = ['giwel01', 'giwel02', 'giwel03', 'giwel04', 'giwel05']
+        const wegidList = ['giwel01', 'giwel02', 'giwel03', 'giwel04', 'giwel05'];
 
         const startFrom = formatDate(from);
         const endTo = formatDate(to);
 
-        await getreport(startFrom, endTo, wegidList);
+        const machineFilepaths = await getreport(startFrom, endTo, wegidList);
+
+        // console.log("Generated Machine Filepaths:", machineFilepaths);
 
         const subject =
-            timeLine == "Daily"
-                ? `Sembcorp Daily Report ${new Date().toLocaleString()}`
-                : timeLine == "Week"
-                    ? "Sembcorp Weekly Report"
-                    : "Sembcorp Monthly Report";
+            timeLine === "Hourly"
+                ? `Sembcorp Hourly Report ${new Date().toLocaleString()}`
+                : "Sembcorp Report";
 
-        if (emails.length === 0)
+        const emails = await psqlToJson("SELECT first_name, email FROM users_table WHERE enable_emails='true'");
+
+        if (emails.length === 0) {
             return;
-        
-        setTimeout(async () => {
-            emails.forEach(async (data) => {
-                const HTML = `<div>
-                    <h1>${timeLine == "Daily"
-                                ? `Daily Report ${new Date().toLocaleString()}`
-                                : timeLine == "Weekly"
-                                    ? "Weekly Report"
-                                    : "Monthly Report"
-                            }</h1>
-                    <span>
-                        <h3>Dear ${data.first_name},</h3>
-                        <p>      </p>
-                        <p>Please find attached here with the Sembcorp System report dated from ${from} to ${to}.
-                        <br />
-                        <br />
-                        This is the auto generated mail. Do not reply to the mail.</p>
-                            <div></div>
-                            <p>Regards, <br />
-                            EnergySYS, Coimbatore <br />
-                            +919940247490</p>
-                        </span>
-                    </div>`;
-                await mail(data.email, subject, null, filepath[filepath.length - 1], HTML);
-            });
-        }, 300);
+        }
 
+        for (const machine of wegidList) {
+            // const machineName = machine.toUpperCase(); // Assuming machine names are in uppercase
+
+            const HTML = `<div>
+                <h1>${subject}</h1>
+                <span>
+                    <h3>Dear Customer,</h3>
+                    <p>      </p>
+                    <p>Please find attached here with the Sembcorp System report dated from ${from} to ${to}.
+                    <br />
+                    <br />
+                    This is the auto-generated mail. Do not reply to the mail.</p>
+                    <div></div>
+                    <p>Regards, <br />
+                    EnergySYS, Coimbatore <br />
+                    +919940247490</p>
+                </span>
+            </div>`;
+
+            const machineName = machine.toUpperCase();
+            const machineIndex = wegidList.indexOf(machine);
+            const filepath = machineFilepaths[machineIndex].filepath;
+
+            for (const email of emails) {
+                await mail(email.email, subject, null, filepath, HTML, machineName);
+            }
+
+            // Delete the file after sending the email
+            fs.unlink(filepath, (err) => {
+                if (err) {
+                    console.log(`Error deleting file ${filepath}: ${err}`);
+                } else {
+                    console.log(`File ${filepath} deleted successfully.`);
+                }
+            });
+        }
     } catch (error) {
         console.log(error.message);
     }
-};
+}
+
 //-----------------------------------------------
 
 module.exports = sendReport;

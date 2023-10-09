@@ -6,7 +6,7 @@ exports.getFilteredData = async (req, res) => {
     const { periodFrom, periodTo, selectedMachine } = req.body
     try {
         const data = await db.manyOrNone(
-            `SELECT * FROM $1:name WHERE created_on BETWEEN $2 AND $3 ORDER BY created_on DESC LIMIT 50`,
+            `SELECT * FROM $1:name WHERE created_on BETWEEN $2 AND $3 ORDER BY created_on DESC`,
             [selectedMachine, periodFrom, periodTo]
         )
         // console.log(data)

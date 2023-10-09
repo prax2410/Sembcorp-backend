@@ -4,7 +4,7 @@ const db = require("../Database/db");
 const io = require("socket.io")(3003, {
     cors: {
         origin: "*",
-    },
+    }
 });
 
 // var mqttData = {
@@ -46,7 +46,6 @@ client.on('connect', function () {
 // });
 
 client.on('message', async function (topic, message) {
-
     try {
         const data = message.toString();
         const newData = JSON.parse(data);
@@ -62,8 +61,6 @@ client.on('message', async function (topic, message) {
             Mag = Element[1];
             dec = Element[2];
 
-            
-
             io.emit("recieve-temp", {
                 data: {
                     wegid: WegId,
@@ -72,6 +69,7 @@ client.on('message', async function (topic, message) {
                     decible: dec
                 }
             });
+
             storeIntoDb(WegId, Hz, Mag, dec)
         });
 

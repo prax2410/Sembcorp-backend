@@ -29,7 +29,7 @@ app.use("/api", usersRoutes);
 app.use("/api", reportRoutes);
 app.use("/api", machineRoutes);
 
-// scheduler();
+scheduler();
 
 // module.exports = app;
 app.listen(port, () => {

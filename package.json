@@ -4,12 +4,12 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "concurrently \"pm2 start app.js\" \"cd handlers && pm2 start mqttHandler.js\"",
+        "start": "concurrently \"pm2 start app.js --node-args=--max-old-space-size=25600\" \"cd handlers && pm2 start mqttHandler.js\"",
         "stop": "concurrently \"pm2 stop app.js\" \"cd handlers && pm2 stop mqttHandler.js\"",
         "delete-all": "pm2 delete all",
         "watch": "concurrently \"pm2 start app.js --watch\" \"cd handlers && pm2 start mqttHandler.js --watch\"",
         "dev": "concurrently \"nodemon app.js\" \"cd handlers && nodemon mqttHandler.js\"",
-        "dev2": "nodemon app.js",
+        "dev2": "nodemon --max-old-space-size=25600 app.js",
         "logs": "pm2 logs",
         "clear-logs": "pm2 flush"
     },
@@ -25,6 +25,7 @@
         "cors": "^2.8.5",
         "cron": "^2.3.0",
         "dotenv": "^16.0.3",
+        "exceljs": "^4.3.0",
         "express": "^4.18.2",
         "express-jwt": "^5.3.2",
         "jsonwebtoken": "^9.0.0",

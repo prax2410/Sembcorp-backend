@@ -1,1 +1,7 @@
-{"HOST":"sembcorp.esys.co.in","PASSWORD":"sembcorp#2023","DB_PORT":"5432","DATABASE":"SembcorpV2","USER":"postgres"}
+{
+    "HOST":"sembcorp.esys.co.in",
+    "PASSWORD":"sembcorp#2023",
+    "DB_PORT":"5432",
+    "DATABASE":"SembcorpV2",
+    "USER":"postgres"
+}
